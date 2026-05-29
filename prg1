@@ -1,0 +1,137 @@
+import re
+import string
+
+
+class PasswordStrengthChecker:
+
+    def __init__(self, password):
+        self.password = password
+        self.score = 0
+        self.feedback = []
+
+    def check_length(self):
+        length = len(self.password)
+
+        if length >= 12:
+            self.score += 2
+        elif length >= 8:
+            self.score += 1
+        else:
+            self.feedback.append(
+                "Password should contain at least 8 characters."
+            )
+
+    def check_uppercase(self):
+        if re.search(r"[A-Z]", self.password):
+            self.score += 1
+        else:
+            self.feedback.append(
+                "Include at least one uppercase letter."
+            )
+
+    def check_lowercase(self):
+        if re.search(r"[a-z]", self.password):
+            self.score += 1
+        else:
+            self.feedback.append(
+                "Include at least one lowercase letter."
+            )
+
+    def check_digits(self):
+        digits = len(re.findall(r"\d", self.password))
+
+        if digits >= 2:
+            self.score += 2
+        elif digits == 1:
+            self.score += 1
+        else:
+            self.feedback.append(
+                "Include at least one numeric digit."
+            )
+
+    def check_special_characters(self):
+        special_chars = len(
+            re.findall(rf"[{re.escape(string.punctuation)}]", self.password)
+        )
+
+        if special_chars >= 2:
+            self.score += 2
+        elif special_chars == 1:
+            self.score += 1
+        else:
+            self.feedback.append(
+                "Include at least one special character."
+            )
+
+    def check_common_patterns(self):
+
+        common_passwords = [
+            "password",
+            "123456",
+            "qwerty",
+            "admin",
+            "welcome"
+        ]
+
+        lower_password = self.password.lower()
+
+        for word in common_passwords:
+            if word in lower_password:
+                self.score -= 2
+                self.feedback.append(
+                    "Avoid common passwords or predictable patterns."
+                )
+                break
+
+        # Detect repeated characters
+        if re.search(r"(.)\1{2,}", self.password):
+            self.score -= 1
+            self.feedback.append(
+                "Avoid repeated characters like 'aaa' or '111'."
+            )
+
+    def calculate_strength(self):
+
+        self.check_length()
+        self.check_uppercase()
+        self.check_lowercase()
+        self.check_digits()
+        self.check_special_characters()
+        self.check_common_patterns()
+
+        # Final classification
+        if self.score >= 7:
+            strength = "Strong"
+        elif self.score >= 4:
+            strength = "Medium"
+        else:
+            strength = "Weak"
+
+        return strength
+
+    def display_result(self):
+
+        strength = self.calculate_strength()
+
+        print("\n========== PASSWORD ANALYSIS ==========")
+        print(f"Password Entered : {'*' * len(self.password)}")
+        print(f"Strength Level   : {strength}")
+        print(f"Security Score   : {self.score}/9")
+
+        if self.feedback:
+            print("\nSuggestions to Improve Security:")
+            for tip in self.feedback:
+                print(f"- {tip}")
+        else:
+            print("\nExcellent! Your password is highly secure.")
+
+        print("=======================================\n")
+
+
+# Main Program
+if __name__ == "__main__":
+
+    password = input("Enter a password to evaluate: ")
+
+    checker = PasswordStrengthChecker(password)
+    checker.display_result()
